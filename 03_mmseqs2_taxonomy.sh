@@ -59,9 +59,8 @@ echo "MMseqs2 mem:  ${MMSEQS_MEM}"
 echo "=========================================="
 
 mkdir -p "${OUTDIR}"
-# Use LSF-provided local scratch for MMseqs2 tmp (large I/O, auto-cleaned after job)
-# LSF sets $TMPDIR but does not guarantee the directory exists
-MMSEQS_TMP="${TMPDIR}/mmseqs2_taxonomy"
+# Use local scratch — $TMPDIR is not set on this cluster, build from $LSB_JOBID
+MMSEQS_TMP="/tmp/${LSB_JOBID}/mmseqs2_taxonomy"
 mkdir -p "${MMSEQS_TMP}"
 
 QUERY_DB="${OUTDIR}/contigs_db"

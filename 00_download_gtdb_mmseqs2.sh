@@ -30,16 +30,16 @@ echo "Job started:  $(date)"
 echo "Job ID:       ${LSB_JOBID}"
 echo "Host:         $(hostname) ($(nproc) CPUs, $(free -h | awk '/^Mem/{print $2}') RAM)"
 echo "Output DB:    ${OUTDB}"
-echo "Tmp dir:      ${TMPDIR} (local scratch)"
+echo "Tmp dir:      /tmp/${LSB_JOBID} (local scratch)"
 echo "Threads:      ${THREADS}"
 echo "=========================================="
 
 mkdir -p "$(dirname "${OUTDB}")"
 
-# Use LSF-provided local scratch (auto-cleaned after job)
-# LSF sets $TMPDIR but does not guarantee the directory exists
-mkdir -p "${TMPDIR}"
-mmseqs databases GTDB "${OUTDB}" "${TMPDIR}" --threads "${THREADS}"
+# Use local scratch — $TMPDIR is not set on this cluster, build from $LSB_JOBID
+SCRATCH="/tmp/${LSB_JOBID}"
+mkdir -p "${SCRATCH}"
+mmseqs databases GTDB "${OUTDB}" "${SCRATCH}" --threads "${THREADS}"
 
 EXIT_CODE=$?
 
