@@ -1,0 +1,7 @@
+*.fna.gz
+*.fna
+*.fastq.gz
+*.fastq
+*.bam
+*.bai
+*.paf
