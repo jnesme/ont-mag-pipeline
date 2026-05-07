@@ -15,10 +15,10 @@
 #==========================================================================
 # EDIT THESE BEFORE SUBMITTING
 #==========================================================================
-CONTIGS=""        # Filtered contigs from step 02_filter_host.sh
+CONTIGS="/work3/josne/Projects/DoraMultiOmics/metaMDBG_rescued.all.fastq/contigs.fasta.gz"        # Filtered contigs from step 02_filter_host.sh
                   # (contigs_no_host.fasta.gz)
-OUTDIR=""         # Output directory for geNomad results
-GENOMAD_DB=""     # Path to geNomad database directory
+OUTDIR="/work3/josne/Projects/DoraMultiOmics/geNomad_out"         # Output directory for geNomad results
+GENOMAD_DB="/work3/josne/Databases/genomad_db"     # Path to geNomad database directory
                   # Download with: genomad download-database /path/to/db/
 THREADS=24
 #==========================================================================
