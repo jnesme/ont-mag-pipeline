@@ -37,6 +37,8 @@ echo "=========================================="
 mkdir -p "$(dirname "${OUTDB}")"
 
 # Use LSF-provided local scratch (auto-cleaned after job)
+# LSF sets $TMPDIR but does not guarantee the directory exists
+mkdir -p "${TMPDIR}"
 mmseqs databases GTDB "${OUTDB}" "${TMPDIR}" --threads "${THREADS}"
 
 EXIT_CODE=$?

@@ -60,6 +60,7 @@ echo "=========================================="
 
 mkdir -p "${OUTDIR}"
 # Use LSF-provided local scratch for MMseqs2 tmp (large I/O, auto-cleaned after job)
+# LSF sets $TMPDIR but does not guarantee the directory exists
 MMSEQS_TMP="${TMPDIR}/mmseqs2_taxonomy"
 mkdir -p "${MMSEQS_TMP}"
 
