@@ -65,7 +65,7 @@ SemiBin2 single_easy_bin \
     --input-fasta "${CONTIGS}" \
     --input-bam "${BAM}" \
     --output "${OUTDIR}" \
-    --training-type self \
+    --self-supervised \
     --sequencing-type long_read \
     --threads "${THREADS}"
 
