@@ -15,8 +15,7 @@
 #==========================================================================
 # EDIT THESE BEFORE SUBMITTING
 #==========================================================================
-OUTDB="/work3/josne/Databases/gtdb_mmseqs2_db"  # Output database path
-TMPDIR="/work3/josne/Databases/tmp_mmseqs2"      # Temporary directory
+OUTDB="/work3/josne/Databases/gtdb_mmseqs2_db"  # Output database path (NFS, persists)
 THREADS=24
 #==========================================================================
 
@@ -31,18 +30,16 @@ echo "Job started:  $(date)"
 echo "Job ID:       ${LSB_JOBID}"
 echo "Host:         $(hostname) ($(nproc) CPUs, $(free -h | awk '/^Mem/{print $2}') RAM)"
 echo "Output DB:    ${OUTDB}"
-echo "Tmp dir:      ${TMPDIR}"
+echo "Tmp dir:      ${TMPDIR} (local scratch)"
 echo "Threads:      ${THREADS}"
 echo "=========================================="
 
 mkdir -p "$(dirname "${OUTDB}")"
-mkdir -p "${TMPDIR}"
 
+# Use LSF-provided local scratch (auto-cleaned after job)
 mmseqs databases GTDB "${OUTDB}" "${TMPDIR}" --threads "${THREADS}"
 
 EXIT_CODE=$?
-
-rm -rf "${TMPDIR}"
 
 # --- Log footer -----------------------------------------------------------
 echo "=========================================="

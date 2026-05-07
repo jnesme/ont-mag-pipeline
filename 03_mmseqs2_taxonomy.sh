@@ -59,8 +59,9 @@ echo "MMseqs2 mem:  ${MMSEQS_MEM}"
 echo "=========================================="
 
 mkdir -p "${OUTDIR}"
-TMPDIR="${OUTDIR}/tmp"
-mkdir -p "${TMPDIR}"
+# Use LSF-provided local scratch for MMseqs2 tmp (large I/O, auto-cleaned after job)
+MMSEQS_TMP="${TMPDIR}/mmseqs2_taxonomy"
+mkdir -p "${MMSEQS_TMP}"
 
 QUERY_DB="${OUTDIR}/contigs_db"
 TAXA_DB="${OUTDIR}/taxonomy_result"
@@ -83,7 +84,7 @@ mmseqs taxonomy \
     "${QUERY_DB}" \
     "${GTDB_DB}" \
     "${TAXA_DB}" \
-    "${TMPDIR}" \
+    "${MMSEQS_TMP}" \
     --threads "${THREADS}" \
     --search-type 2 \
     --lca-mode 3 \
@@ -107,8 +108,7 @@ mmseqs createtsv \
 EXIT_CODE=$?
 [ ${EXIT_CODE} -ne 0 ] && echo "ERROR: mmseqs createtsv failed" >&2 && exit ${EXIT_CODE}
 
-# Clean up MMseqs2 tmp files (large)
-rm -rf "${TMPDIR}"
+# LSF cleans up ${TMPDIR} (local scratch) automatically after the job
 
 # --- Log footer -----------------------------------------------------------
 N_CLASSIFIED=$(awk '$2 != "0"' "${TAXA_TSV}" | wc -l)
