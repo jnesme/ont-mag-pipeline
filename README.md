@@ -329,5 +329,5 @@ the nearest reference genome for each MAG.
 - **CheckM2:** Chklovski et al., *Nat. Methods* (2023)
 - **GTDB-Tk:** Chaumeil et al., *Bioinformatics* (2022)
 - **TaxVamb** (evaluated, not used): dependency on large GTDB database (400+ GB) not feasible on this cluster
-- **DAStool** (evaluated, not used): no benefit with a single chromosomal binner; Sieber et al., *Nat. Microbiol.* (2018)
+- **DAStool** (evaluated, not used): geNomad produces contig-level classifications, not chromosomal bins — plasmid contigs carry no bacterial marker genes and are discarded by DAStool's scoring; DAStool only adds value with two independent chromosomal binners; Sieber et al., *Nat. Microbiol.* (2018)
 - **BASALT** (evaluated, not used): PacBio HiFi only, no ONT support; Qiu et al., *Nat. Commun.* (2024) — doi:10.1038/s41467-024-46539-7
