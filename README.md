@@ -72,7 +72,7 @@ conda install -n anvio-9 -c bioconda minimap2
 |---|---|---|
 | geNomad DB | `/work3/josne/Databases/genomad_db` | `04_genomad.sh` |
 | CheckM2 DB | `/work3/josne/Databases/checkm2_db` | `05_checkm2.sh` |
-| GTDB-Tk r232 | `/work3/josne/miniconda3/envs/gtdbtk/share/gtdbtk-2.7.1/db/` | `06_gtdbtk.sh` |
+| GTDB-Tk r232 | `/work3/josne/miniconda3/envs/gtdbtk/share/gtdbtk-2.7.1/db/release232/` | `06_gtdbtk.sh` |
 | *I. galbana* reference | `I.galbana_GCA_018136815.1_ASM1813681v1_genomic.fna.gz` (in repo) | `02_filter_host.sh` |
 
 Download the CheckM2 database (~3 GB, one-time):
