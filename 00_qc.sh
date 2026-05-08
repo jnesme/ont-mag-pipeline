@@ -54,11 +54,6 @@ echo "=========================================="
 
 # --- Pre-QC stats -----------------------------------------------------------
 echo ""
-echo "--- Pre-QC: NanoStat ---"
-NanoStat --fastq "${READS}" --threads "${THREADS}" \
-    | tee "${OUTDIR}/nanostat_raw.txt"
-
-echo ""
 echo "--- Pre-QC: NanoPlot ---"
 NanoPlot --fastq "${READS}" \
     --outdir "${OUTDIR}/nanoplot_raw" \
@@ -110,11 +105,6 @@ rm -f "${TRIMMED}"
 
 # --- Post-QC stats ----------------------------------------------------------
 echo ""
-echo "--- Post-QC: NanoStat ---"
-NanoStat --fastq "${FILTERED}" --threads "${THREADS}" \
-    | tee "${OUTDIR}/nanostat_filtered.txt"
-
-echo ""
 echo "--- Post-QC: NanoPlot ---"
 NanoPlot --fastq "${FILTERED}" \
     --outdir "${OUTDIR}/nanoplot_filtered" \
@@ -139,8 +129,6 @@ echo "Exit code:    0"
 echo ""
 echo "Outputs:"
 echo "  Filtered reads:     ${FILTERED}"
-echo "  NanoStat raw:       ${OUTDIR}/nanostat_raw.txt"
-echo "  NanoStat filtered:  ${OUTDIR}/nanostat_filtered.txt"
 echo "  NanoPlot raw:       ${OUTDIR}/nanoplot_raw/NanoPlot-report.html"
 echo "  NanoPlot filtered:  ${OUTDIR}/nanoplot_filtered/NanoPlot-report.html"
 echo ""
