@@ -65,7 +65,9 @@ NanoPlot --fastq "${READS}" \
     --threads "${THREADS}" \
     --N50 \
     --title "Raw reads" \
-    --loglength
+    --loglength \
+    --no-static \
+    --downsample 100000
 
 EXIT_CODE=$?
 if [ ${EXIT_CODE} -ne 0 ]; then
@@ -119,7 +121,9 @@ NanoPlot --fastq "${FILTERED}" \
     --threads "${THREADS}" \
     --N50 \
     --title "Filtered reads (Q>=${MIN_QUALITY}, len>=${MIN_LENGTH} bp)" \
-    --loglength
+    --loglength \
+    --no-static \
+    --downsample 100000
 
 EXIT_CODE=$?
 if [ ${EXIT_CODE} -ne 0 ]; then
