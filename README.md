@@ -22,21 +22,23 @@ small and well-defined (~8 MAGs expected).
 ## Pipeline Overview
 
 ```
-01_assembly.sh                       metaMDBG assembly (ONT reads → contigs)
+00_qc.sh                             Adapter trimming + read QC (→ qc_reads.fastq.gz)
     │
-    ├── 02_gfa.sh                    Assembly graph export (visualization)
-    │
-    └── 02_filter_host.sh            Remove I. galbana host contigs
+    └── 01_assembly.sh               metaMDBG assembly (filtered reads → contigs)
             │
-            ├── 04_genomad.sh        Plasmid / virus detection (contig-level)
+            ├── 02_gfa.sh            Assembly graph export (visualization)
             │
-            └── 02_map_reads.sh      Map ONT reads back to clean contigs (BAM)
+            └── 02_filter_host.sh    Remove I. galbana host contigs
                     │
-                    └── 03_semibin2.sh   SemiBin2 binning
+                    ├── 04_genomad.sh    Plasmid / virus detection (contig-level)
+                    │
+                    └── 02_map_reads.sh  Map ONT reads back to clean contigs (BAM)
                             │
-                            └── 05_checkm2.sh   Bin quality assessment
+                            └── 03_semibin2.sh   SemiBin2 binning
                                     │
-                                    └── 06_gtdbtk.sh   Taxonomic classification
+                                    └── 05_checkm2.sh   Bin quality assessment
+                                            │
+                                            └── 06_gtdbtk.sh   Taxonomic classification
 ```
 
 Steps `02_gfa.sh` and `02_filter_host.sh` can run in parallel immediately after
@@ -51,6 +53,7 @@ filtering.
 
 | Environment | Path | Used by |
 |---|---|---|
+| `nanoQC` | `/work3/josne/miniconda3/envs/nanoQC` | `00_qc.sh` |
 | `metaMDBG` | `/work3/josne/miniconda3/envs/metaMDBG` | `01_assembly.sh`, `02_gfa.sh` |
 | `anvio-9` | `/work3/josne/miniconda3/envs/anvio-9` | `02_filter_host.sh`, `02_map_reads.sh` |
 | `semibin2` | `/work3/josne/miniconda3/envs/semibin2` | `03_semibin2.sh` |
@@ -87,6 +90,33 @@ genomad download-database /work3/josne/Databases/genomad_db
 ---
 
 ## Step-by-step
+
+### 00 — Read QC (`00_qc.sh`)
+
+**Tools:** Porechop_ABI + Chopper + NanoStat + NanoPlot
+**Resources:** 24 cores, 120 GB RAM, 12 h
+**Environment:** `nanoQC`
+
+Performs adapter trimming and quality/length filtering on raw ONT reads before
+assembly, and generates QC reports before and after filtering.
+
+Steps:
+1. **NanoStat + NanoPlot** on raw reads — baseline QC report and HTML visualisation
+2. **Porechop_ABI** — adapter trimming; uses ab initio detection so adapter
+   sequences need not be specified. The trimmed intermediate is written to local
+   scratch (`/tmp/${LSB_JOBID}`) and deleted after filtering.
+3. **Chopper** — streaming quality and length filter (`--quality 8 --minlength 500`)
+4. **NanoStat + NanoPlot** on filtered reads — post-QC comparison
+
+Default thresholds (`MIN_QUALITY=8`, `MIN_LENGTH=500`) are intentionally lenient:
+metaMDBG applies its own `--min-read-quality 10` filter internally, so the QC
+step removes only clearly low-quality reads and very short fragments that carry
+no assembly information.
+
+Output `qc_reads.fastq.gz` replaces the raw reads as input to `01_assembly.sh`.
+Update the `READS` variable in `01_assembly.sh` accordingly before submitting.
+
+---
 
 ### 01 — Assembly (`01_assembly.sh`)
 
@@ -323,6 +353,8 @@ the nearest reference genome for each MAG.
 
 ## References
 
+- **NanoPack2** (NanoStat, NanoPlot, Chopper): De Coster & Rademakers, *Bioinformatics* (2023)
+- **Porechop_ABI**: Bonenfant et al., *Bioinformatics Advances* (2023)
 - **metaMDBG:** Benoit et al., *Nat. Biotechnol.* (2023); *Nat. Commun.* (2026)
 - **SemiBin2:** Pan et al., *Nat. Methods* (2023)
 - **geNomad:** Camargo et al., *Nat. Biotechnol.* (2023)
