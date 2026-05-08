@@ -17,9 +17,9 @@
 #==========================================================================
 BINS_DIR="/work3/josne/Projects/DoraMultiOmics/semibin2_out/output_bins"   # SemiBin2 bin FASTA files
 OUTDIR="/work3/josne/Projects/DoraMultiOmics/checkm2_out"
-CHECKM2_DB="/work3/josne/Databases/checkm2_db"   # Download with:
+CHECKM2_DB="/work3/josne/Databases/CheckM2_database/"   # Download with:
                   # checkm2 database --download --path /work3/josne/Databases/checkm2_db
-EXTENSION="fa"
+EXTENSION="fa.gz"
 THREADS=24
 #==========================================================================
 

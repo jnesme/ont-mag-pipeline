@@ -18,7 +18,7 @@
 BINS_DIR="/work3/josne/Projects/DoraMultiOmics/semibin2_out/output_bins"   # SemiBin2 bins (from 03_semibin2.sh)
 OUTDIR="/work3/josne/Projects/DoraMultiOmics/gtdbtk_out"
 GTDBTK_DB="/work3/josne/miniconda3/envs/gtdbtk/share/gtdbtk-2.7.1/db"
-EXTENSION="fa"      # bin FASTA extension (matches SemiBin2 output_bins/*.fa)
+EXTENSION="fa.gz"   # bin FASTA extension (matches SemiBin2 output_bins/*.fa.gz)
 THREADS=24
 # pplacer spawns one independent process per CPU; each loads the full reference
 # tree (~165 GB bacteria, ~14 GB archaea). With 8 MAGs and 384 GB available,

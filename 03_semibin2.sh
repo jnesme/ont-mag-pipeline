@@ -75,18 +75,18 @@ if [ ${EXIT_CODE} -ne 0 ]; then
     exit ${EXIT_CODE}
 fi
 
-# --- Generate scaffold-to-bin TSV for DAStool ----------------------------
+# --- Generate scaffold-to-bin TSV (contig → bin mapping) ------------------
 # Format: contig_name <tab> bin_name (no header)
 SCAFFOLD2BIN="${OUTDIR}/semibin2_contigs2bins.tsv"
 > "${SCAFFOLD2BIN}"
-for bin in "${OUTDIR}/output_bins/"*.fa; do
+for bin in "${OUTDIR}/output_bins/"*.fa.gz; do
     [ -f "${bin}" ] || continue
-    bin_name=$(basename "${bin}" .fa)
-    grep "^>" "${bin}" | sed 's/^>//' | awk -v b="${bin_name}" '{print $1"\t"b}'
+    bin_name=$(basename "${bin}" .fa.gz)
+    zcat "${bin}" | grep "^>" | sed 's/^>//' | awk -v b="${bin_name}" '{print $1"\t"b}'
 done >> "${SCAFFOLD2BIN}"
 
 # --- Log footer -----------------------------------------------------------
-N_BINS=$(ls "${OUTDIR}/output_bins/"*.fa 2>/dev/null | wc -l)
+N_BINS=$(ls "${OUTDIR}/output_bins/"*.fa.gz 2>/dev/null | wc -l)
 N_CONTIGS=$(wc -l < "${SCAFFOLD2BIN}")
 echo "=========================================="
 echo "Job finished: $(date)"
