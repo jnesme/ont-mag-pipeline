@@ -17,8 +17,7 @@
 #==========================================================================
 BINS_DIR="/work3/josne/Projects/DoraMultiOmics/semibin2_out/output_bins"   # SemiBin2 bin FASTA files
 OUTDIR="/work3/josne/Projects/DoraMultiOmics/checkm2_out"
-CHECKM2_DB="/work3/josne/Databases/CheckM2_database/"   # Download with:
-                  # checkm2 database --download --path /work3/josne/Databases/checkm2_db
+CHECKM2_DB="/work3/josne/Databases/CheckM2_database/uniref100.KO.1.dmnd"   # path to .dmnd file
 EXTENSION="fa.gz"
 THREADS=24
 #==========================================================================
@@ -35,11 +34,11 @@ if [ "${N_BINS}" -eq 0 ]; then
     exit 1
 fi
 
-if [ ! -d "${CHECKM2_DB}" ]; then
+if [ ! -f "${CHECKM2_DB}" ]; then
     echo "ERROR: CheckM2 database not found: ${CHECKM2_DB}" >&2
     echo "       Download with:" >&2
     echo "         conda activate /work3/josne/miniconda3/envs/checkm2" >&2
-    echo "         checkm2 database --download --path ${CHECKM2_DB}" >&2
+    echo "         checkm2 database --download --path \$(dirname ${CHECKM2_DB})" >&2
     exit 1
 fi
 
