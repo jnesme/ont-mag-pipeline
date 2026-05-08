@@ -1,6 +1,6 @@
 #!/bin/bash
 ### General options
-#BSUB -q hpcspecial
+#BSUB -q milan
 #BSUB -J genomad
 #BSUB -n 24
 #BSUB -R "span[hosts=1] rusage[mem=8GB]"

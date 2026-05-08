@@ -5,3 +5,5 @@
 *.bam
 *.bai
 *.paf
+*.out
+*.err

@@ -22,34 +22,26 @@ small and well-defined (~8 MAGs expected).
 ## Pipeline Overview
 
 ```
-[one-time setup]
-00_download_gtdb_mmseqs2.sh          Download GTDB r232 as MMseqs2 database
-
-[per-sample]
 01_assembly.sh                       metaMDBG assembly (ONT reads → contigs)
     │
     ├── 02_gfa.sh                    Assembly graph export (visualization)
     │
     └── 02_filter_host.sh            Remove I. galbana host contigs
             │
-            ├── 02_map_reads.sh      Map ONT reads back to clean contigs (BAM)
-            │       │
-            │       ├── 03_semibin2.sh          SemiBin2 binning
-            │       │
-            │       └── 03_mmseqs2_taxonomy.sh  Contig-level GTDB taxonomy
-            │               │
-            │               └── 04_taxvamb.sh   TaxVamb binning  [not yet written]
+            ├── 04_genomad.sh        Plasmid / virus detection (contig-level)
             │
-            └── 04_genomad.sh        Plasmid / virus detection
-            
-[downstream — not yet written]
-05_dastool.sh      Bin refinement (SemiBin2 + TaxVamb → non-redundant MAGs)
-06_gtdbtk.sh       Taxonomic classification + phylogenetic placement
+            └── 02_map_reads.sh      Map ONT reads back to clean contigs (BAM)
+                    │
+                    └── 03_semibin2.sh   SemiBin2 binning
+                            │
+                            └── 05_checkm2.sh   Bin quality assessment
+                                    │
+                                    └── 06_gtdbtk.sh   Taxonomic classification
 ```
 
 Steps `02_gfa.sh` and `02_filter_host.sh` can run in parallel immediately after
-assembly. Steps `03_semibin2.sh` and `03_mmseqs2_taxonomy.sh` can run in parallel
-after mapping and host filtering respectively.
+assembly. `04_genomad.sh` and `02_map_reads.sh` can run in parallel after host
+filtering.
 
 ---
 
@@ -62,7 +54,8 @@ after mapping and host filtering respectively.
 | `metaMDBG` | `/work3/josne/miniconda3/envs/metaMDBG` | `01_assembly.sh`, `02_gfa.sh` |
 | `anvio-9` | `/work3/josne/miniconda3/envs/anvio-9` | `02_filter_host.sh`, `02_map_reads.sh` |
 | `semibin2` | `/work3/josne/miniconda3/envs/semibin2` | `03_semibin2.sh` |
-| `genomad` | `/work3/josne/miniconda3/envs/genomad` | `03_mmseqs2_taxonomy.sh`, `04_genomad.sh` |
+| `genomad` | `/work3/josne/miniconda3/envs/genomad` | `04_genomad.sh` |
+| `checkm2` | `/work3/josne/miniconda3/envs/checkm2` | `05_checkm2.sh` |
 | `gtdbtk` | `/work3/josne/miniconda3/envs/gtdbtk` | `06_gtdbtk.sh` |
 
 Note: `minimap2` must be installed in the `anvio-9` environment:
@@ -74,14 +67,15 @@ conda install -n anvio-9 -c bioconda minimap2
 
 | Database | Path | Used by |
 |---|---|---|
-| GTDB r232 (MMseqs2 format) | `/work3/josne/Databases/gtdb_mmseqs2_db` | `03_mmseqs2_taxonomy.sh` |
 | geNomad DB | `/work3/josne/Databases/genomad_db` | `04_genomad.sh` |
+| CheckM2 DB | `/work3/josne/Databases/checkm2_db` | `05_checkm2.sh` |
 | GTDB-Tk r232 | `/work3/josne/miniconda3/envs/gtdbtk/share/gtdbtk-2.7.1/db/` | `06_gtdbtk.sh` |
 | *I. galbana* reference | `I.galbana_GCA_018136815.1_ASM1813681v1_genomic.fna.gz` (in repo) | `02_filter_host.sh` |
 
-Download the GTDB MMseqs2 database (one-time, run on cluster):
+Download the CheckM2 database (~3 GB, one-time):
 ```bash
-bsub < 00_download_gtdb_mmseqs2.sh
+conda activate /work3/josne/miniconda3/envs/checkm2
+checkm2 database --download --path /work3/josne/Databases/checkm2_db
 ```
 
 Download the geNomad database:
@@ -93,15 +87,6 @@ genomad download-database /work3/josne/Databases/genomad_db
 ---
 
 ## Step-by-step
-
-### 00 — Download GTDB MMseqs2 database (one-time)
-
-Downloads and indexes GTDB r232 in MMseqs2 format to
-`/work3/josne/Databases/gtdb_mmseqs2_db`. This database is reusable across all
-future projects. Uses local `/tmp` scratch (752 GB) for intermediate files to
-avoid NFS I/O during indexing.
-
----
 
 ### 01 — Assembly (`01_assembly.sh`)
 
@@ -223,37 +208,11 @@ Generates `semibin2_contigs2bins.tsv` (scaffold-to-bin format) for DAStool.
 
 ---
 
-### 03b — Contig taxonomy annotation (`03_mmseqs2_taxonomy.sh`)
+### 03b — Contig taxonomy annotation (`03_kaiju_taxonomy.sh`)
 
-**Tool:** MMseqs2 taxonomy  
-**Resources:** 24 cores, 120 GB RAM, 12 h  
-**Runs in parallel with:** `03_semibin2.sh`  
-**Prerequisite:** `00_download_gtdb_mmseqs2.sh`
-
-Assigns GTDB r232 taxonomy to each contig using translated search
-(`--search-type 2`, nucleotide contigs vs GTDB protein database) and
-approximate 2bLCA (`--lca-mode 3`). Required by TaxVamb.
-
-MMseqs2 intermediate files are written to `/tmp/${LSB_JOBID}` (local disk,
-752 GB) to avoid NFS I/O load. The final taxonomy TSV is written to NFS.
-
-Note: `$TMPDIR` is not set by LSF on this cluster — scratch paths are
-constructed from `$LSB_JOBID` explicitly.
-
----
-
-### 04a — TaxVamb binning (`04_taxvamb.sh`) — *not yet written*
-
-TaxVamb extends VAMB with contig-level taxonomic signals to improve binning.
-Takes the BAM file from `02_map_reads.sh` and the taxonomy TSV from
-`03_mmseqs2_taxonomy.sh`.
-
-Together with SemiBin2, TaxVamb provides two independent bin sets for DAStool
-to reconcile.
-
----
-
-### 04b — Plasmid/virus detection (`04_genomad.sh`)
+**Tool:** Kaiju (protein-level classification, MEM algorithm)  
+**Resources:** 24 cores, 72 GB RAM, 6 h  
+### 04 — Plasmid/virus detection (`04_genomad.sh`)
 
 **Tool:** geNomad  
 **Resources:** 24 cores, 192 GB RAM, 12 h
@@ -280,29 +239,69 @@ tetranucleotide frequency (TNF) for clustering. Both signals fail for plasmids:
 Plasmids are therefore treated as individual contigs throughout. Host-plasmid
 association is a separate analysis problem outside the scope of this pipeline.
 
-Generates `genomad_plasmid_contigs2bins.tsv` for DAStool, where each plasmid
-contig is its own bin.
+Plasmid and viral contigs are reported independently — they are not merged into
+chromosomal bins. Results can be cross-referenced with SemiBin2 bins to flag
+any bin contaminated by plasmid sequence.
 
 ---
 
-### 05 — Bin refinement (`05_dastool.sh`) — *not yet written*
+### 05 — Bin quality assessment (`05_checkm2.sh`)
 
-DAStool scores bins from SemiBin2 and TaxVamb using single-copy marker genes
-and produces a non-redundant, quality-filtered set of MAGs. geNomad plasmid
-bins are passed as an additional bin set.
+**Tool:** CheckM2  
+**Resources:** 24 cores, 72 GB RAM, 4 h  
+**Environment:** `checkm2`
 
-**Why DAStool instead of BASALT?**  
-BASALT (Binning Across a Series of Assemblies Toolkit, Qiu et al. *Nat.
-Commun.* 2024) was evaluated. It outperforms DAStool on CAMI benchmarks but
-currently supports only PacBio HiFi long reads — ONT is not yet supported
-(as of May 2026).
+Assesses completeness and contamination of each SemiBin2 bin using DIAMOND
+protein search against a reference database followed by a machine learning
+model. Replaces CheckM1 (which used hmmer) — CheckM2 is substantially faster
+and more accurate, especially for novel lineages.
+
+Bins meeting standard thresholds (MIMAG):
+- **High quality (HQ):** completeness ≥ 90%, contamination ≤ 5%
+- **Medium quality (MQ):** completeness ≥ 50%, contamination ≤ 10%
+
+The quality report (`quality_report.tsv`) feeds directly into GTDB-Tk — only
+HQ and MQ bins warrant taxonomic placement.
+
+Database download (~3 GB, one-time):
+```bash
+conda activate /work3/josne/miniconda3/envs/checkm2
+checkm2 database --download --path /work3/josne/Databases/checkm2_db
+```
 
 ---
 
-### 06 — GTDB-Tk classification (`06_gtdbtk.sh`) — *not yet written*
+### 06 — GTDB-Tk classification (`06_gtdbtk.sh`)
 
-Taxonomic classification and phylogenetic placement of final MAGs against the
-GTDB r232 reference tree.
+**Tool:** GTDB-Tk 2.7.1  
+**Resources:** 24 cores, 384 GB RAM (milan queue), 12 h  
+**Environment:** `gtdbtk`
+
+Taxonomic classification and phylogenetic placement of the refined MAGs against
+the GTDB r232 reference tree. Runs `classify_wf`, which:
+1. Identifies single-copy marker genes with prodigal + hmmer
+2. Aligns markers to the bac120 / ar53 reference MSA
+3. Places genomes into the reference tree with pplacer
+
+**Queue:** `milan` is required — pplacer loads the full bacterial reference tree
+(~165 GB) into RAM, which leaves insufficient headroom on `hpcspecial` (251 GB).
+milan (1 TB RAM) handles this comfortably with the 384 GB request (16 GB × 24 cores).
+
+**pplacer parallelism:** `--pplacer_cpus` spawns independent pplacer processes,
+each loading the full tree (~165 GB). For ~8 MAGs, `PPLACER_CPUS=1` is fast and
+safe. Increase only if running many MAGs and RAM allows (each additional CPU adds
+~165 GB peak usage for bacteria).
+
+**Database:** Set via `GTDBTK_DATA_PATH` environment variable before running.
+The tarball must be extracted before use:
+```bash
+cd /work3/josne/miniconda3/envs/gtdbtk/share/gtdbtk-2.7.1/db
+tar -I 'pigz -p 4' -xf gtdbtk_r232_data.tar.gz
+```
+
+Outputs: `classify/gtdbtk.bac120.summary.tsv` and
+`classify/gtdbtk.ar53.summary.tsv` — full lineage strings, RED values, and
+the nearest reference genome for each MAG.
 
 ---
 
@@ -326,8 +325,9 @@ GTDB r232 reference tree.
 
 - **metaMDBG:** Benoit et al., *Nat. Biotechnol.* (2023); *Nat. Commun.* (2026)
 - **SemiBin2:** Pan et al., *Nat. Methods* (2023)
-- **TaxVamb:** Nissen et al., *Nat. Biotechnol.* (2021) + TaxVamb extension
 - **geNomad:** Camargo et al., *Nat. Biotechnol.* (2023)
-- **DAStool:** Sieber et al., *Nat. Microbiol.* (2018)
+- **CheckM2:** Chklovski et al., *Nat. Methods* (2023)
 - **GTDB-Tk:** Chaumeil et al., *Bioinformatics* (2022)
-- **BASALT** (evaluated, not used): Qiu et al., *Nat. Commun.* (2024) — doi:10.1038/s41467-024-46539-7
+- **TaxVamb** (evaluated, not used): dependency on large GTDB database (400+ GB) not feasible on this cluster
+- **DAStool** (evaluated, not used): no benefit with a single chromosomal binner; Sieber et al., *Nat. Microbiol.* (2018)
+- **BASALT** (evaluated, not used): PacBio HiFi only, no ONT support; Qiu et al., *Nat. Commun.* (2024) — doi:10.1038/s41467-024-46539-7

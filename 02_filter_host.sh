@@ -15,9 +15,9 @@
 #==========================================================================
 # EDIT THESE BEFORE SUBMITTING
 #==========================================================================
-ASSEMBLY_DIR=""    # metaMDBG output dir from step 1 (contains contigs.fasta.gz)
+ASSEMBLY_DIR="/work3/josne/Projects/DoraMultiOmics/metaMDBG_rescued.all.fastq"    # metaMDBG output dir from step 1 (contains contigs.fasta.gz)
 HOST_REF="/work3/josne/github/metaMDBG-lsf10/I.galbana_GCA_018136815.1_ASM1813681v1_genomic.fna.gz"
-OUTDIR=""          # Output directory for filtered contig files
+OUTDIR="/work3/josne/Projects/DoraMultiOmics/host_filtering"          # Output directory for filtered contig files
 MIN_COV_FRAC=0.50  # Min fraction of contig length mapping to host (0.0-1.0)
 MIN_MAPQ=30        # Min mapping quality to call a contig host-derived
 THREADS=24
